@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ville RP</title>
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+body{
+    font-family:Arial,sans-serif;
+    background:#0b1120;
+    color:white;
+    overflow-x:hidden;
+}
+header{
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    padding:18px;
+    text-align:center;
+    border-bottom:2px solid #3b82f6;
+}
+header h1{
+    font-size:28px;
+}
+header p{
+    color:#bfdbfe;
+    margin-top:5px;
+}
+#game{
+    display:flex;
+    min-height:calc(100vh - 90px);
+}
+#sidebar{
+    width:280px;
+    background:#111827;
+    padding:16px;
+    border-right:1px solid #263244;
+}
+#sidebar h2{
+    margin-bottom:15px;
+}
+.stats{
+    background:#0b1120;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:15px;
+}
+.stat{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid #1f2937;
+}
+.stat:last-child{
+    border-bottom:none;
+}
+button{
+    width:100%;
+    padding:12px;
+    margin:5px 0;
+    border:0;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+button:hover{
+    background:#1d4ed8;
+}
+.danger{
+    background:#dc2626;
+}
+.green{
+    background:#16a34a;
+}
+.gray{
+    background:#374151;
+}
+#city{
+    flex:1;
+    padding:20px;
+}
+#map{
+    position:relative;
+    height:560px;
+    max-width:1000px;
+    margin:auto;
+    overflow:hidden;
+    border:4px solid #334155;
+    border-radius:18px;
+    background:
+        linear-gradient(90deg,
+        transparent 47%,
+        #475569 47%,
+        #475569 53%,
+        transparent 53%),
+        linear-gradient(0deg,
+        transparent 47%,
+        #475569 47%,
+        #475569 53%,
+        transparent 53%),
+        #166534;
+}
+.road{
+    position:absolute;
+    background:#475569;
+}
+.road.horizontal{
+    height:55px;
+    width:100%;
+    top:47%;
+}
+.road.vertical{
+    width:55px;
+    height:100%;
+    left:47%;
+}
+.location{
+    position:absolute;
+    width:140px;
+    padding:13px;
+    text-align:center;
+    background:#111827;
+    border:2px solid #60a5fa;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.2s;
+    z-index:3;
+}
+.location:hover{
+    transform:scale(1.06);
+    background:#1e293b;
+}
+#mairie{
+    top:25px;
+    left:25px;
+}
+#police{
+    top:25px;
+    right:25px;
+}
+#hopital{
+    bottom:25px;
+    left:25px;
+}
+#garage{
+    bottom:25px;
+    right:25px;
+}
+#restaurant{
+    top:210px;
+    left:50%;
+    transform:translateX(-50%);
+}
+#maison{
+    top:220px;
+    left:25px;
+}
+#magasin{
+    top:220px;
+    right:25px;
+}
+#banque{
+    bottom:25px;
+    left:50%;
+    transform:translateX(-50%);
+}
+#player{
+    position:absolute;
+    width:28px;
+    height:28px;
+    background:#facc15;
+    border:3px solid white;
+    border-radius:50%;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 18px #facc15;
+    z-index:10;
+}
+#log{
+    max-width:1000px;
+    height:150px;
+    overflow-y:auto;
+    margin:15px auto;
+    background:#020617;
+    border:1px solid #1e293b;
+    border-radius:12px;
+    padding:12px;
+}
+.logLine{
+    margin-bottom:7px;
+    color:#cbd5e1;
+}
+#controls{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin:15px auto;
+}
+.controlRow{
+    display:flex;
+    gap:8px;
+}
+.controlBtn{
+    width:55px;
+    height:55px;
+    font-size:22px;
+    padding:0;
+    margin:3px;
+    background:#1e40af;
+}
+#modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+}
+.modalBox{
+    width:92%;
+    max-width:470px;
+    max-height:85vh;
+    overflow-y:auto;
+    background:#111827;
+    border:1px solid #334155;
+    padding:22px;
+    border-radius:16px;
+}
+.modalBox h2{
+    margin-bottom:15px;
+}
+.modalBox input,
+.modalBox select{
+    width:100%;
+    padding:12px;
+    margin:7px 0;
+    border:0;
+    border-radius:9px;
+}
+.close{
+    background:#dc2626;
+}
+.progress{
+    height:8px;
+    background:#1f2937;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:5px;
+}
+.progressBar{
+    height:100%;
+    width:100%;
+    background:#22c55e;
+}
+@media(max-width:800px){
+    #game{
+        flex-direction:column;
+    }
+    #sidebar{
+        width:100%;
+        border-right:0;
+        border-bottom:1px solid #263244;
+    }
+    #map{
+        height:520px;
+    }
+    .location{
+        width:115px;
+        font-size:13px;
+    }
+    #maison{
+        top:190px;
+    }
+    #magasin{
+        top:190px;
+    }
+    #restaurant{
+        top:205px;
+    }
+    #bank{
+        bottom:20px;
+    }
+}
+</style>
+</head>
+<body>
+<header>
+    <h1>🏙️ VILLE RP</h1>
+    <p>Construis ta vie dans la ville</p>
+</header>
+<div id="game">
+<aside id="sidebar">
+<h2>👤 Personnage</h2>
+<div class="stats">
+<div class="stat">
+<span>Nom</span>
+<strong id="name">Inconnu</strong>
+</div>
+<div class="stat">
+<span>💰 Argent</span>
+<strong id="money">500 €</strong>
+</div>
+<div class="stat">
+<span>❤️ Santé</span>
+<strong id="health">100</strong>
+</div>
+<div class="stat">
+<span>🍔 Faim</span>
+<strong id="hunger">100</strong>
+</div>
+<div class="stat">
+<span>💼 Métier</span>
+<strong id="job">Sans emploi</strong>
+</div>
+<div class="stat">
+<span>🚗 Véhicule</span>
+<strong id="vehicle">Aucun</strong>
+</div>
+<div class="stat">
+<span>⭐ Niveau</span>
+<strong id="level">1</strong>
+</div>
+<div class="stat">
+<span>✨ XP</span>
+<strong id="xp">0 / 100</strong>
+</div>
+</div>
+<button onclick="createCharacter()">👤 Personnage</button>
+<button onclick="openJobs()">💼 Métiers</button>
+<button onclick="openShop()">🛒 Magasin</button>
+<button onclick="openBank()">🏦 Banque</button>
+<button onclick="openInventory()">🎒 Inventaire</button>
+<button onclick="saveGame()" class="green">💾 Sauvegarder</button>
+<button onclick="loadGame()" class="gray">📂 Charger</button>
+</aside>
+<main id="city">
+<div id="map">
+<div class="road horizontal"></div>
+<div class="road vertical"></div>
+<div id="player"></div>
+<div class="location" id="mairie"
+onclick="goLocation('Mairie')">
+🏛️<br>Mairie
+</div>
+<div class="location" id="police"
+onclick="goLocation('Commissariat')">
+👮<br>Commissariat
+</div>
+<div class="location" id="hopital"
+onclick="goLocation('Hôpital')">
+🏥<br>Hôpital
+</div>
+<div class="location" id="garage"
+onclick="goLocation('Garage')">
+🚗<br>Garage
+</div>
+<div class="location" id="restaurant"
+onclick="goLocation('Restaurant')">
+🍔<br>Restaurant
+</div>
+<div class="location" id="maison"
+onclick="goLocation('Maison')">
+🏠<br>Maison
+</div>
+<div class="location" id="magasin"
+onclick="goLocation('Magasin')">
+🛒<br>Magasin
+</div>
+<div class="location" id="banque"
+onclick="goLocation('Banque')">
+🏦<br>Banque
+</div>
+</div>
+<div id="controls">
+<div class="controlRow">
+<button class="controlBtn" onclick="movePlayer(0,-3)">⬆️</button>
+</div>
+<div class="controlRow">
+<button class="controlBtn" onclick="movePlayer(-3,0)">⬅️</button>
+<button class="controlBtn gray" onclick="resetPosition()">⏺️</button>
+<button class="controlBtn" onclick="movePlayer(3,0)">➡️</button>
+</div>
+<div class="controlRow">
+<button class="controlBtn" onclick="movePlayer(0,3)">⬇️</button>
+</div>
+</div>
+<div id="log"></div>
+</main>
+</div>
+<div id="modal">
+<div class="modalBox">
+<h2 id="modalTitle">Menu</h2>
+<div id="modalContent"></div>
+<button class="close" onclick="closeModal()">
+Fermer
+</button>
+</div>
+</div>
+<script>
+let player={
+    name:"Inconnu",
+    money:500,
+    health:100,
+    hunger:100,
+    job:"Sans emploi",
+    vehicle:"Aucun",
+    level:1,
+    xp:0,
+    inventory:[]
+};
+function updateUI(){
+    document.getElementById("name").textContent=player.name;
+    document.getElementById("money").textContent=player.money+" €";
+    document.getElementById("health").textContent=player.health;
+    document.getElementById("hunger").textContent=player.hunger;
+    document.getElementById("job").textContent=player.job;
+    document.getElementById("vehicle").textContent=player.vehicle;
+    document.getElementById("level").textContent=player.level;
+    document.getElementById("xp").textContent=player.xp+" / 100";
+}
+function log(message){
+    const box=document.getElementById("log");
+    const line=document.createElement("div");
+    line.className="logLine";
+    line.textContent="▶ "+message;
+    box.prepend(line);
+}
+function addXP(amount){
+    player.xp+=amount;
+    if(player.xp>=100){
+        player.xp-=100;
+        player.level++;
+        log("🎉 Tu passes niveau "+player.level+" !");
+    }
+    updateUI();
+}
+function createCharacter(){
+    openModal(
+        "Créer ton personnage",
+        `
+        <input id="characterName"
+        placeholder="Prénom et nom">
+        <button onclick="confirmCharacter()">
+        Créer le personnage
+        </button>
+        `
+    );
+}
+function confirmCharacter(){
+    const input=document.getElementById("characterName");
+    if(!input.value.trim()){
+        alert("Entre un nom.");
+        return;
+    }
+    player.name=input.value.trim();
+    updateUI();
+    closeModal();
+    log("Bienvenue "+player.name+" !");
+}
+function openJobs(){
+    openModal(
+        "💼 Métiers",
+        `
+        <button onclick="chooseJob('Chauffeur',80)">
+        🚕 Chauffeur — 80 €
+        </button>
+        <button onclick="chooseJob('Policier',120)">
+        👮 Policier — 120 €
+        </button>
+        <button onclick="chooseJob('Médecin',150)">
+        🏥 Médecin — 150 €
+        </button>
+        <button onclick="chooseJob('Mécanicien',100)">
+        🔧 Mécanicien — 100 €
+        </button>
+        <button onclick="chooseJob('Employé magasin',70)">
+        🛒 Employé magasin — 70 €
+        </button>
+        `
+    );
+}
+function chooseJob(job,salary){
+    player.job=job;
+    updateUI();
+    closeModal();
+    log("Tu as choisi le métier : "+job);
+    setTimeout(()=>{
+        player.money+=salary;
+        addXP(25);
+        log("💼 Travail terminé : +"+salary+" €");
+    },3000);
+}
+function eat(){
+    if(player.money<15){
+        log("❌ Tu n'as pas assez d'argent.");
+        return;
+    }
+    if(player.hunger>=100){
+        log("Tu n'as pas faim.");
+        return;
+    }
+    player.money-=15;
+    player.hunger=Math.min(100,player.hunger+30);
+    updateUI();
+    log("🍔 Tu as mangé. -15 €");
+}
+function openShop(){
+    openModal(
+        "🛒 Magasin",
+        `
+        <p>🍔 Nourriture — 15 €</p>
+        <button onclick="buyFood()">
+        Acheter
+        </button>
+        <p>🎒 Sac — 100 €</p>
+        <button onclick="buyItem('Sac',100)">
+        Acheter
+        </button>
+        <p>📱 Téléphone — 300 €</p>
+        <button onclick="buyItem('Téléphone',300)">
+        Acheter
+        </button>
+        `
+    );
+}
+function buyFood(){
+    if(player.money<15){
+        log("Pas assez d'argent.");
+        return;
+    }
+    player.money-=15;
+    player.hunger=Math.min(100,player.hunger+35);
+    updateUI();
+    log("🍔 Nourriture achetée.");
+}
+function buyItem(item,price){
+    if(player.money<price){
+        log("❌ Pas assez d'argent.");
+        return;
+    }
+    player.money-=price;
+    player.inventory.push(item);
+    updateUI();
+    log("🛒 Tu as acheté : "+item);
+}
+function openInventory(){
+    let content="<h3>🎒 Inventaire</h3>";
+    if(player.inventory.length===0){
+        content+="<p>Inventaire vide.</p>";
+    }else{
+        player.inventory.forEach(item=>{
+            content+="<p>• "+item+"</p>";
+        });
+    }
+    openModal("Inventaire",content);
+}
+function openBank(){
+    openModal(
+        "🏦 Banque",
+        `
+        <p>Argent disponible : <strong>${player.money} €</strong></p>
+        <button onclick="bankReward()">
+        💳 Recevoir 50 € de salaire
+        </button>
+        `
+    );
+}
+function bankReward(){
+    player.money+=50;
+    updateUI();
+    log("🏦 La banque t'a versé 50 €.");
+    closeModal();
+}
+function goLocation(location){
+    log("📍 Tu te rends au "+location+".");
+    if(location==="Hôpital"){
+        if(player.money>=50){
+            player.money-=50;
+            player.health=100;
+            log("🏥 Tu as été soigné. -50 €");
+        }else{
+            log("❌ Il te faut 50 €.");
+        }
+    }
+    if(location==="Garage"){
+        if(player.vehicle==="Aucun"){
+            if(player.money>=300){
+                player.money-=300;
+                player.vehicle="Petite voiture";
+                log("🚗 Tu as acheté une petite voiture !");
+            }else{
+                log("❌ La voiture coûte 300 €.");
+            }
+        }else{
+            log("🚗 Véhicule : "+player.vehicle);
+        }
+    }
+    if(location==="Restaurant"){
+        eat();
+    }
+    if(location==="Maison"){
+        player.hunger=Math.min(100,player.hunger+10);
+        player.health=Math.min(100,player.health+10);
+        log("🏠 Tu te reposes chez toi.");
+    }
+    if(location==="Magasin"){
+        openShop();
+    }
+    if(location==="Banque"){
+        openBank();
+    }
+    if(location==="Mairie"){
+        log("🏛️ Bienvenue à la mairie.");
+        addXP(5);
+    }
+    if(location==="Commissariat"){
+        if(player.job==="Policier"){
+            log("👮 Tu commences ton service.");
+            addXP(20);
+        }else{
+            log("👮 Tu entres dans le commissariat.");
+        }
+    }
+    updateUI();
+}
+function movePlayer(x,y){
+    const element=document.getElementById("player");
+    let left=parseFloat(element.style.left)||50;
+    let top=parseFloat(element.style.top)||50;
+    left=Math.max(3,Math.min(97,left+x));
+    top=Math.max(3,Math.min(97,top+y));
+    element.style.left=left+"%";
+    element.style.top=top+"%";
+}
+function resetPosition(){
+    const element=document.getElementById("player");
+    element.style.left="50%";
+    element.style.top="50%";
+}
+document.addEventListener("keydown",event=>{
+    const speed=2;
+    if(event.key==="ArrowLeft")
+        movePlayer(-speed,0);
+    if(event.key==="ArrowRight")
+        movePlayer(speed,0);
+    if(event.key==="ArrowUp")
+        movePlayer(0,-speed);
+    if(event.key==="ArrowDown")
+        movePlayer(0,speed);
+});
+function saveGame(){
+    localStorage.setItem(
+        "villeRP",
+        JSON.stringify(player)
+    );
+    log("💾 Partie sauvegardée.");
+}
+function loadGame(){
+    const saved=localStorage.getItem("villeRP");
+    if(!saved){
+        log("❌ Aucune sauvegarde.");
+        return;
+    }
+    player=JSON.parse(saved);
+    updateUI();
+    log("📂 Partie chargée.");
+}
+function openModal(title,content){
+    document.getElementById("modalTitle").textContent=title;
+    document.getElementById("modalContent").innerHTML=content;
+    document.getElementById("modal").style.display="flex";
+}
+function closeModal(){
+    document.getElementById("modal").style.display="none";
+}
+setInterval(()=>{
+    player.hunger-=1;
+    if(player.hunger<0)
+        player.hunger=0;
+    if(player.hunger===0){
+        player.health-=2;
+        if(player.health<0)
+            player.health=0;
+        log("🍔 Tu as très faim !");
+    }
+    updateUI();
+},10000);
+setInterval(()=>{
+    saveGame();
+},30000);
+updateUI();
+log("🏙️ Bienvenue dans Ville RP !");
+log("🎮 Utilise les flèches ou les boutons pour te déplacer.");
+</script>
+</body>
+</html>
